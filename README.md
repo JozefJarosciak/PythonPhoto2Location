@@ -1,4 +1,4 @@
-# PythonWindowsAppTkinterExample
+# Python Tutorial: How to create a Python GUI using Tkinter
 Python Windows App - Tkinter Example
 
 A tutorial video that describes the basics of creating graphical user interfaces (GUI) in Python by using Tkinter interface to the Tk GUI toolkit.

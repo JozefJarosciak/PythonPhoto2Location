@@ -97,7 +97,7 @@ def press():
     geo_tags = get_geotagging(exif)
     print(get_coordinates(geo_tags))
     # print(geo_tags)
-    label.config(text=f"Address: {get_coordinates(geo_tags)}")
+    label.config(text=f"Coordinates: {get_coordinates(geo_tags)}")
 
 
 # Place 'Change Label' button on the window

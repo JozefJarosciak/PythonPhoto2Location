@@ -2,6 +2,10 @@ import tkinter
 from PIL.ExifTags import GPSTAGS
 from PIL.ExifTags import TAGS
 from PIL import Image
+import requests
+from shapely.geometry import mapping, shape
+from shapely.prepared import prep
+from shapely.geometry import Point
 
 # Initialize the main window
 window = tkinter.Tk()
@@ -16,6 +20,21 @@ window.wm_iconbitmap("pacman.ico")
 label = tkinter.Label(window, text="Click the Button")
 # Place label at coordinates x=10 and y=10 (top right hand corner)
 label.place(x=10, y=10)
+countries = {}
+data = requests.get("C:\\code\\Python\\PythonPhoto2Location\\countries.geojson").json()
+for feature in data["features"]:
+    geom = feature["geometry"]
+    country = feature["properties"]["ADMIN"]
+    countries[country] = prep(shape(geom))
+
+
+def get_country(lon, lat):
+    point = Point(lon, lat)
+    for country, geom in countries.tems():
+        if geom.contains(point):
+            return country
+
+    return "unknown"
 
 
 def get_labeled_exif(exif):
@@ -98,6 +117,7 @@ def press():
     print(get_coordinates(geo_tags))
     # print(geo_tags)
     label.config(text=f"Coordinates: {get_coordinates(geo_tags)}")
+    print(get_country(10.0, 47.0))
 
 
 # Place 'Change Label' button on the window

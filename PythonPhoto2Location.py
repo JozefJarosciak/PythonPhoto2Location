@@ -1,11 +1,12 @@
+import json
 import tkinter
+from collections import OrderedDict
+
 from PIL.ExifTags import GPSTAGS
 from PIL.ExifTags import TAGS
 from PIL import Image
-import requests
-from shapely.geometry import mapping, shape
-from shapely.prepared import prep
-from shapely.geometry import Point
+import reverse_geocoder as rg
+from pprint import pprint
 
 # Initialize the main window
 window = tkinter.Tk()
@@ -16,25 +17,12 @@ window.title("Photo To Location")
 # Set Icon
 window.wm_iconbitmap("pacman.ico")
 
-# Place 'Hello World' label on the window
-label = tkinter.Label(window, text="Click the Button")
-# Place label at coordinates x=10 and y=10 (top right hand corner)
+# Place labels
+label = tkinter.Label(window, text="Coordinates")
 label.place(x=10, y=10)
-countries = {}
-data = requests.get("C:\\code\\Python\\PythonPhoto2Location\\countries.geojson").json()
-for feature in data["features"]:
-    geom = feature["geometry"]
-    country = feature["properties"]["ADMIN"]
-    countries[country] = prep(shape(geom))
 
-
-def get_country(lon, lat):
-    point = Point(lon, lat)
-    for country, geom in countries.tems():
-        if geom.contains(point):
-            return country
-
-    return "unknown"
+label2 = tkinter.Label(window, text="City")
+label2.place(x=10, y=30)
 
 
 def get_labeled_exif(exif):
@@ -115,15 +103,20 @@ def press():
     exif = get_exif(path)
     geo_tags = get_geotagging(exif)
     print(get_coordinates(geo_tags))
-    # print(geo_tags)
     label.config(text=f"Coordinates: {get_coordinates(geo_tags)}")
-    print(get_country(10.0, 47.0))
+    coordinates = get_coordinates(geo_tags)
+    results = rg.search(coordinates, mode=1)
+    pprint(results)
+    city = results[0].get('name') + ", "
+    state = results[0].get('admin1') + ", "
+    country = results[0].get('cc')
+    label2.config(text=f"Location: {city}{state}{country}")
 
 
 # Place 'Change Label' button on the window
 button = tkinter.Button(window, text="Button", command=press)
 # Place label at coordinates x=10 and y=10 (top right hand corner)
-button.place(x=10, y=40)
+button.place(x=10, y=60)
 
 # Show new window
 window.mainloop()

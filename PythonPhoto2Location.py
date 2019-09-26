@@ -1,12 +1,11 @@
-import json
 import tkinter
-from collections import OrderedDict
-
+import glob
 from PIL.ExifTags import GPSTAGS
 from PIL.ExifTags import TAGS
 from PIL import Image
 import reverse_geocoder as rg
 from pprint import pprint
+import datetime
 
 # Initialize the main window
 window = tkinter.Tk()
@@ -15,13 +14,13 @@ window.minsize(400, 400)
 # Give your window a title
 window.title("Photo To Location")
 # Set Icon
-window.wm_iconbitmap("pacman.ico")
+window.wm_iconbitmap("window_icon.ico")
 
 # Place labels
-label = tkinter.Label(window, text="Coordinates")
+label = tkinter.Label(window, text="Coordinates:")
 label.place(x=10, y=10)
 
-label2 = tkinter.Label(window, text="City")
+label2 = tkinter.Label(window, text="Location:")
 label2.place(x=10, y=30)
 
 
@@ -45,8 +44,8 @@ def get_geotagging(exif):
     for (idx, tag) in TAGS.items():
         if tag == 'GPSInfo':
             if idx not in exif:
-                raise ValueError("No EXIF geo_tagging found")
-
+                # raise ValueError("No EXIF geo_tagging found")
+                error = 1
             for (key, val) in GPSTAGS.items():
                 if key in exif[idx]:
                     geo_tagging[val] = exif[idx][key]
@@ -68,6 +67,12 @@ def get_coordinates(geotags):
     lat = get_decimal_from_dms(geotags['GPSLatitude'], geotags['GPSLatitudeRef'])
     lon = get_decimal_from_dms(geotags['GPSLongitude'], geotags['GPSLongitudeRef'])
     return lat, lon
+
+
+def convert(date_time):
+    format = '%Y:%m:%d' # The format
+    datetime_str = datetime.datetime.strptime(date_time, format)
+    return datetime_str
 
 
 # Function to find the screen dimensions, calculate the center and set geometry
@@ -92,31 +97,48 @@ counter = 0
 
 
 # Define button press function
-def press():
-    # use globally set counter variable
-    global counter
-    # count each button press
-    counter = counter + 1
-    # set label
-    path = 'C:\\code\\Python\\PythonPhoto2Location\\testimages\\20150927_174958.jpg'
-    # geo_tags = get_geotagging(exif)
-    exif = get_exif(path)
-    geo_tags = get_geotagging(exif)
-    print(get_coordinates(geo_tags))
-    label.config(text=f"Coordinates: {get_coordinates(geo_tags)}")
-    coordinates = get_coordinates(geo_tags)
-    results = rg.search(coordinates, mode=1)
-    pprint(results)
-    city = results[0].get('name') + ", "
-    state = results[0].get('admin1') + ", "
-    country = results[0].get('cc')
-    label2.config(text=f"Location: {city}{state}{country}")
+def press2():
+    print("start")
+    path = "D:\\OneDrive\\1.Important\\Backups-Pictures\\2015\\03-March\\"
+    files = [f for f in glob.glob(path + "**/*.jpg", recursive=True)]
+    # coord = []
+    visited_cities = []
+    visited_cities_clean = []
+    for f in files:
+        # print(f)
+        try:
+            exif = get_exif(f)
+            geo_tags = get_geotagging(exif)
+            # label.config(text=f"Coordinates: {get_coordinates(geo_tags)}")
+            # coord.append(get_coordinates(geo_tags))
+            results = rg.search(get_coordinates(geo_tags), mode=1)
+            city = results[0].get('name') + ", "
+            state = results[0].get('admin1') + ", "
+            country = results[0].get('cc')
+            datum = geo_tags['GPSDateStamp']
+            year = str(convert(datum).year)
+            month = str(convert(datum).month)
+
+            visited_cities.append(city + state + country + "|" + year+":"+month)
+
+            print("Location:" + city + state + country + " | " + f)
+            for word in visited_cities:
+                if word not in visited_cities_clean:
+                    visited_cities_clean.append(word)
+            label2.config(text=f"Location: {city}{state}{country}")
+        except:
+            # print("GPS Data Missing in " + f)
+            error = 2
+    print("clean:")
+    pprint(visited_cities_clean)
+    print("end")
 
 
 # Place 'Change Label' button on the window
-button = tkinter.Button(window, text="Button", command=press)
-# Place label at coordinates x=10 and y=10 (top right hand corner)
+button = tkinter.Button(window, text="Button", command=press2)
 button.place(x=10, y=60)
+button2 = tkinter.Button(window, text="ListFiles", command=press2)
+button2.place(x=10, y=90)
 
 # Show new window
 window.mainloop()

@@ -150,6 +150,10 @@ def open_excel(event):
     os.startfile("results.xlsx")
 
 
+def percentage(part, whole):
+    return round(100 * float(part) / float(whole), 2)
+
+
 # Define button press function
 def process():
     print("Starting to Parse Image Exif Information")
@@ -163,7 +167,7 @@ def process():
     count = 0
     path = entryText.get() + "/"
     # path = entryText.get().replace("/", "//")+"//"
-    files = [f for f in glob.glob(path + "**/*.*", recursive=True)]
+    files = [f for f in glob.glob(path + "**/*.jpg", recursive=True)]
     visited_cities = []
     visited_cities_clean = []
     visited_coordinates_lat = []
@@ -178,8 +182,8 @@ def process():
         f = f.replace("\\", "/")
         count = count + 1
         if count % 10 == 0:
-            # print(count)
-            status_message.set("Processing Image: " + str(count) + " of " + str(cpt))
+            status_message.set(
+                "Processing Image: " + str(count) + " of " + str(cpt) + " (" + str(percentage(count, cpt)) + "%)")
         try:
             exif = get_exif(f)
             geo_tags = get_geotagging(exif)
@@ -221,7 +225,7 @@ def process():
                 if word not in visited_cities_clean:
                     visited_cities_clean.append(word)
                     label.config(text=f"Processing Coordinates: {coordinates}")
-                    label2.config(text="Processing Location: " + city + state + country)
+                    label2.config(text="Successfully Resolved: " + city + state + country)
                     if lat != 0.000 and lon != 0.000:
                         visited_coordinates_lat.append(lat)
                         visited_coordinates_lon.append(lon)
@@ -232,8 +236,7 @@ def process():
                         cities.append(results[0].get('name'))
                         countries.append(country)
                         text.insert(tkinter.END,
-                                    year + ":" + month + " - " + city + country + "\t (" + str(lat) + "," + str(
-                                        lon) + ")\n")
+                                    year + "/" + month + " - " + city + country + "\n")
                         text.see("end")
         except:
             # print("GPS Data Missing in " + f)
@@ -250,12 +253,11 @@ def process():
     # print("--------------------------")
 
     print("--- GOOGLE MAP Generated ---")
-    google_map = gmplot.GoogleMapPlotter(0, 0, 3)
+    google_map = gmplot.GoogleMapPlotter(0, 0, 2)
     google_map.coloricon = "http://www.googlemapsmarkers.com/v1/%s/"
     google_map.apikey = google_api_key
     google_map.heatmap(visited_coordinates_lat, visited_coordinates_lon)
-    google_map.plot(visited_coordinates_lat, visited_coordinates_lon, c='#046CC6', title="implementation",
-                    label="implementation", edge_width=3.0)
+    google_map.plot(visited_coordinates_lat, visited_coordinates_lon, c='#046CC6', edge_width=1.0)
 
     # ADD MARKERS
     for word in visited_coordinates:

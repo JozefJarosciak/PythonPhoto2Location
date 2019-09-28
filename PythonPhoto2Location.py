@@ -1,7 +1,4 @@
-import calendar
-import datetime, glob, os, os.path
-import tkinter
-import webbrowser
+import calendar, datetime, glob, os, os.path, tkinter, webbrowser
 from decimal import Decimal
 from threading import Thread
 from tkinter import *
@@ -15,42 +12,30 @@ from PIL.ExifTags import GPSTAGS
 from PIL.ExifTags import TAGS
 from gmplot import gmplot
 
-# ADD YOUR OWN GOOGLE MAPS API KEY, THE ONE BELOW WON'T WORK
+# ADD YOUR OWN GOOGLE MAPS API KEY (the one below is a fake ID)
 google_api_key = "IzaSyD2KMkrfQkzqNBEo-5iZDhDOlbvvDrO0dM"
 
-# Initialize the main window
+# Initialize the main window and all components
 window = tkinter.Tk()
-# Size window
 window.minsize(500, 500)
-# Title
 window.title("Photo To Location")
-# Set Icon
 window.wm_iconbitmap("window_icon.ico")
-
 entryText = tkinter.StringVar()
 textbox = tkinter.Entry(window, width=75, textvariable=entryText)
 textbox.place(x=10, y=20)
-
-# Place labels
 link2 = Label(window, text="", fg="blue", cursor="hand2")
 link2.place(x=160, y=90)
-
 link1 = Label(window, text="", fg="blue", cursor="hand2")
 link1.place(x=270, y=90)
-
 label = tkinter.Label(window, text="")
 label.place(x=10, y=80)
-
 label2 = tkinter.Label(window, text="")
 label2.place(x=10, y=96)
-
 status_message = StringVar()
 status = Label(window, textvariable=status_message, bd=1, relief=SUNKEN, anchor=W)
 status.pack(side=BOTTOM, fill=X)
-
 text = Text(window, height=22, width=59)
 text.place(x=10, y=120)
-
 cpt = 0
 
 
@@ -107,20 +92,12 @@ def converter(date_time):
 
 # Function to find the screen dimensions, calculate the center and set geometry
 def center(win):
-    # Call all pending idle tasks - carry out geometry management and redraw widgets.
     win.update_idletasks()
-    # Get width and height of the screen
     width = win.winfo_width()
     height = win.winfo_height()
-    # Calculate geometry
     x = (win.winfo_screenwidth() // 2) - (width // 2)
     y = (win.winfo_screenheight() // 2) - (height // 2)
-    # Set geometry
     win.geometry('{}x{}+{}+{}'.format(width, height, x, y))
-
-
-# Center Window on Screen
-center(window)
 
 
 def ask_quit():
@@ -135,7 +112,7 @@ def on_closing():
     exit()
 
 
-def press():
+def open_file_dialog():
     global cpt
     root = Tk()
     root.withdraw()
@@ -152,6 +129,15 @@ def open_excel(event):
 
 def percentage(part, whole):
     return round(100 * float(part) / float(whole), 2)
+
+
+def start_thread():
+    Thread(target=process,
+           daemon=True).start()
+
+
+def callback(url):
+    webbrowser.open_new(url)
 
 
 # Define button press function
@@ -194,7 +180,6 @@ def process():
             city = results[0].get('name') + ", "
             state = results[0].get('admin1') + ", "
             country = results[0].get('cc')
-
             cc = coco.CountryConverter(include_obsolete=True)
             country = cc.convert(country, to='name_short')
 
@@ -245,13 +230,6 @@ def process():
     status_message.set("Processed: " + str(count) + " images")
     label.config(text="")
     label2.config(text="")
-    # print("---------RESULTS----------")
-    # visited_cities.sort()
-    # pprint(visited_cities_clean)
-    # eachInASeparateLine = "\n".join(visited_cities_clean)
-    # text.insert(tkinter.END, eachInASeparateLine)
-    # print("--------------------------")
-
     print("--- GOOGLE MAP Generated ---")
     google_map = gmplot.GoogleMapPlotter(0, 0, 2)
     google_map.coloricon = "http://www.googlemapsmarkers.com/v1/%s/"
@@ -286,12 +264,8 @@ def process():
     workbook = writer.book
     worksheet = writer.sheets['Sheet1']
 
-    header_format = workbook.add_format({
-        'bold': True,
-        'text_wrap': False,
-        'valign': 'top',
-        'fg_color': '#D7E4BC',
-        'border': 1})
+    header_format = workbook.add_format(
+        {'bold': True, 'text_wrap': False, 'valign': 'top', 'fg_color': '#D7E4BC', 'border': 1})
 
     # Write the column headers with the defined format.
     for col_num, value in enumerate(df.columns.values):
@@ -300,7 +274,6 @@ def process():
     # Close the Pandas Excel writer and output the Excel file.
     df.sort_values(['Month', 'Year'], ascending=[True, True])
     writer.save()
-
     text.insert(tkinter.END, "\n")
     text.insert(tkinter.END, "---------------END---------------\n")
     text.insert(tkinter.END, "\n")
@@ -308,21 +281,14 @@ def process():
     print("-------------END------------")
 
 
-def start_thread():
-    Thread(target=process,
-           daemon=True).start()  # deamon=True is important so that you can close the program correctly
-
-
-def callback(url):
-    webbrowser.open_new(url)
-
-
 # Place 'Change Label' button on the window
-button = tkinter.Button(window, text="...", command=press)
+button = tkinter.Button(window, text="...", command=open_file_dialog)
 button.place(x=470, y=17)
-
 process_button = tkinter.Button(window, text="Process Images", command=start_thread)
 process_button.place(x=10, y=50)
+
+# Center Window on Screen
+center(window)
 
 # close the program and tkinter window on exit
 window.protocol("WM_DELETE_WINDOW", ask_quit)

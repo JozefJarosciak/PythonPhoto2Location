@@ -1,4 +1,10 @@
-import calendar, datetime, glob, os, os.path, tkinter, webbrowser
+import calendar
+import datetime
+import glob
+import os
+import os.path
+import tkinter
+import webbrowser
 from decimal import Decimal
 from threading import Thread
 from tkinter import *
@@ -19,7 +25,7 @@ google_api_key = "IzaSyD2KMkrfQkzqNBEo-5iZDhDOlbvvDrO0dM"
 window = tkinter.Tk()
 window.minsize(500, 500)
 window.title("Photo To Location")
-window.wm_iconbitmap("window_icon.ico")
+#window.wm_iconbitmap("window_icon.ico")
 entryText = tkinter.StringVar()
 textbox = tkinter.Entry(window, width=75, textvariable=entryText)
 textbox.place(x=10, y=20)
@@ -163,6 +169,7 @@ def process():
     years = []
     cities = []
     countries = []
+    path_directory = ""
 
     for f in files:
         f = f.replace("\\", "/")

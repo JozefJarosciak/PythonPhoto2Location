@@ -214,8 +214,9 @@ def process():
                     if lat != 0.000 and lon != 0.000:
                         visited_coordinates_lat.append(lat)
                         visited_coordinates_lon.append(lon)
+                        pathr, filenamer = f.rsplit('/', 1)
                         visited_coordinates.append(
-                            city + country + "|" + str(lat) + "|" + str(lon) + "|" + year + ":" + month)
+                            city + country + "|" + str(lat) + "|" + str(lon) + "|" + year + ":" + month + "|" + pathr)
                         months.append(month)
                         years.append(year)
                         cities.append(results[0].get('name'))
@@ -223,6 +224,8 @@ def process():
                         text.insert(tkinter.END,
                                     year + "/" + month + " - " + city + country + "\n")
                         text.see("end")
+
+
         except:
             # print("GPS Data Missing in " + f)
             error = 2
@@ -243,6 +246,7 @@ def process():
         lati = word.split("|")[1]
         long = word.split("|")[2]
         date = word.split("|")[3]
+        path_directory = word.split("|")[4]
         date = date.split(":")
         month_word = (calendar.month_name[int(date[1])])
         google_map.marker(float(lati), float(long), 'cornflowerblue',
@@ -256,9 +260,10 @@ def process():
     link2.config(text="Open Excel")
     link2.bind("<Button-1>", open_excel)
 
+    # EXCEL
     df = pd.DataFrame(
         {'Month': months, 'Year': years, 'City': cities, 'Country': countries, 'Lat.': visited_coordinates_lat,
-         'Long.': visited_coordinates_lon})
+         'Long.': visited_coordinates_lon, 'Directory': path_directory})
     writer = pd.ExcelWriter("results.xlsx", engine='xlsxwriter')
     df.to_excel(writer, sheet_name='Sheet1', startrow=1, header=False)
     workbook = writer.book
@@ -274,6 +279,8 @@ def process():
     # Close the Pandas Excel writer and output the Excel file.
     df.sort_values(['Month', 'Year'], ascending=[True, True])
     writer.save()
+
+    # Write END to Textbox
     text.insert(tkinter.END, "\n")
     text.insert(tkinter.END, "---------------END---------------\n")
     text.insert(tkinter.END, "\n")

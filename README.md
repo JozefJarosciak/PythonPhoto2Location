@@ -14,4 +14,5 @@ If you like it, up-vote this app on Reddit: https://www.reddit.com/r/Python/comm
 - Add high level directory paths to Excel travel log
 
 # Notes
-Latest dependencies list: pip freeze > requirements.txt
+- Important: To create Google Map, you must ADD YOUR OWN GOOGLE MAPS API KEY (the one in the code is a fake ID)
+- Import the dependencies list listed in requirements.txt

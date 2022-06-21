@@ -4,7 +4,7 @@ country-converter==0.6.6
 docopt==0.6.2
 gmplot==1.2.0
 idna==2.8
-numpy==1.17.2
+numpy==1.22.0
 pandas==0.25.1
 Pillow==6.1.0
 pipreqs==0.4.9
